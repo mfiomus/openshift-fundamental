@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: final-app
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 0
+  selector:
+    matchLabels:
+      app: final-app
+  template:
+    metadata:
+      labels:
+        app: final-app
+    spec:
+      containers:
+      - name: final-app
+        image: yourrepo/storage-app:latest
+        ports:
+        - containerPort: 8080
+
+        readinessProbe:
+          httpGet:
+            path: /config-file
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 5
+
+        volumeMounts:
+        - name: data-volume
+          mountPath: /data
+          readOnly: true
+
+      volumes:
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: storage-pvc
